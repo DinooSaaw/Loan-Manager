@@ -1,7 +1,12 @@
 {
-  "name": "vite-react-typescript-starter",
+  "name": "loan-manager",
+  "author": "DinooSaaw",
+  "repository": {
+		"type": "git",
+		"url": "https://github.com/DinooSaaw/Loan-Manager.git"
+	},
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "main": "electron/main.js",
   "scripts": {
