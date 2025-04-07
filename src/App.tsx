@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { LoanForm } from './components/LoanForm';
 import { LoanCard } from './components/LoanCard';
 import { SearchBar } from './components/SearchBar';
 import { Coins, PlusCircle } from 'lucide-react';
 import { loadLoans, saveLoans } from './utils/loanStorage';
+import { Loan } from './types';
 
 function App() {
   const [loans, setLoans] = useState<Loan[]>(() => loadLoans());
@@ -52,18 +53,12 @@ function App() {
 
   const filteredLoans = loans.filter(loan => {
     const searchLower = searchTerm.toLowerCase();
-  
-    if (!searchLower) {
-      return !loan.isPaid; // Show only active (not paid) loans if search is empty
-    }
-  
     return (
       loan.id.toLowerCase().includes(searchLower) ||
       loan.borrowerName.toLowerCase().includes(searchLower) ||
       loan.borrowerId.toLowerCase().includes(searchLower)
     );
   });
-  
 
   return (
     <div className="min-h-screen bg-gray-900 text-white p-8">
