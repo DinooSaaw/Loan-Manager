@@ -1,22 +1,30 @@
 import React, { useState } from 'react';
 import { Banknote, Calendar, CheckCircle, User } from 'lucide-react';
 import { calculateLoan } from '../utils/loanCalculations';
-import { Loan } from '../types';
+import type { Loan } from '../types';
 
 interface LoanCardProps {
   loan: Loan;
   onAddPayment: (loanId: string, amount: number) => void;
+  onAddMoney: (loanId: string, amount: number) => void;
   onMarkPaid: (loanId: string) => void;
 }
 
-export function LoanCard({ loan, onAddPayment, onMarkPaid }: LoanCardProps) {
+export function LoanCard({ loan, onAddPayment, onAddMoney, onMarkPaid }: LoanCardProps) {
   const [paymentAmount, setPaymentAmount] = useState('');
+  const [additionAmount, setAdditionAmount] = useState('');
   const { currentBalance, nextBalance, daysOrWeeksPassed } = calculateLoan(loan);
 
   const handlePayment = (e: React.FormEvent) => {
     e.preventDefault();
     onAddPayment(loan.id, Number(paymentAmount));
     setPaymentAmount('');
+  };
+
+  const handleAddMoney = (e: React.FormEvent) => {
+    e.preventDefault();
+    onAddMoney(loan.id, Number(additionAmount));
+    setAdditionAmount('');
   };
 
   return (
@@ -40,13 +48,16 @@ export function LoanCard({ loan, onAddPayment, onMarkPaid }: LoanCardProps) {
         <div className="flex items-center text-gray-300">
           <User className="w-5 h-5 mr-2 text-green-400" />
           <span>
-            Borrower: {loan.borrowerName} (ID: {loan.borrowerId})
+            Borrower: {loan.borrowerName}
+            <div>
+            ID: {loan.borrowerId}
+            </div>
           </span>
         </div>
 
         <div className="flex items-center text-gray-300">
           <Banknote className="w-5 h-5 mr-2 text-green-400" />
-          <span>Principal: ${loan.principal.toFixed(2)}</span>
+          <span>Principal: ${(loan.principal.toFixed(2))}</span>
         </div>
         
         <div className="flex items-center text-gray-300">
@@ -70,35 +81,67 @@ export function LoanCard({ loan, onAddPayment, onMarkPaid }: LoanCardProps) {
         </div>
 
         <div className="bg-gray-700 p-4 rounded-md">
+          <h4 className="text-lg font-semibold text-green-400 mb-2">Additions to Principal</h4>
+          <div className="space-y-2">
+            {loan.additions.map(addition => (
+              <div key={addition.id} className="flex justify-between text-gray-300">
+                <span>{new Date(addition.date).toLocaleDateString()}</span>
+                <span>+${addition.amount.toFixed(2)}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="bg-gray-700 p-4 rounded-md">
           <h4 className="text-lg font-semibold text-green-400 mb-2">Payments</h4>
           <div className="space-y-2">
             {loan.payments.map(payment => (
               <div key={payment.id} className="flex justify-between text-gray-300">
                 <span>{new Date(payment.date).toLocaleDateString()}</span>
-                <span>${payment.amount.toFixed(2)}</span>
+                <span>-${payment.amount.toFixed(2)}</span>
               </div>
             ))}
           </div>
         </div>
 
         {!loan.isPaid && (
-          <form onSubmit={handlePayment} className="flex gap-2">
-            <input
-              type="number"
-              value={paymentAmount}
-              onChange={(e) => setPaymentAmount(e.target.value)}
-              placeholder="Payment amount"
-              className="flex-1 rounded-md bg-gray-700 border-gray-600 text-white"
-              step="0.01"
-              required
-            />
-            <button
-              type="submit"
-              className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
-            >
-              Add Payment
-            </button>
-          </form>
+          <div className="space-y-4">
+            <form onSubmit={handleAddMoney} className="flex gap-2">
+              <input
+                type="number"
+                value={additionAmount}
+                onChange={(e) => setAdditionAmount(e.target.value)}
+                placeholder="Amount to add to principal"
+                className="flex-1 rounded-md bg-gray-700 border-gray-600 text-white"
+                step="0.01"
+                required
+              />
+              <button
+                type="submit"
+                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 flex items-center"
+              >
+                Add to Principal
+              </button>
+            </form>
+
+            <form onSubmit={handlePayment} className="flex gap-2">
+              <input
+                type="number"
+                value={paymentAmount}
+                onChange={(e) => setPaymentAmount(e.target.value)}
+                placeholder="Payment amount"
+                className="flex-1 rounded-md bg-gray-700 border-gray-600 text-white"
+                step="0.01"
+                required
+              />
+              <button
+                type="submit"
+                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+              >
+                Make Payment
+              </button>
+            </form>
+          </div>
         )}
       </div>
     </div>

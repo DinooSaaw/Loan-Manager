@@ -8,10 +8,17 @@ export interface Loan {
   interestType: 'daily' | 'weekly';
   description: string;
   payments: Payment[];
+  additions: Addition[];
   isPaid: boolean;
 }
 
 export interface Payment {
+  id: string;
+  amount: number;
+  date: string;
+}
+
+export interface Addition {
   id: string;
   amount: number;
   date: string;

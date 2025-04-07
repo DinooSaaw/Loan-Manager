@@ -4,7 +4,7 @@ import { LoanCard } from './components/LoanCard';
 import { SearchBar } from './components/SearchBar';
 import { Coins, PlusCircle } from 'lucide-react';
 import { loadLoans, saveLoans } from './utils/loanStorage';
-import { Loan } from './types';
+import type { Loan } from './types';
 
 function App() {
   const [loans, setLoans] = useState<Loan[]>(() => loadLoans());
@@ -20,10 +20,11 @@ function App() {
       ...loanData,
       id: crypto.randomUUID(),
       payments: [],
+      additions: [],
       isPaid: false
     };
     setLoans(prev => [...prev, newLoan]);
-    setShowLoanForm(false); // Hide form after creation
+    setShowLoanForm(false);
   };
 
   const handleAddPayment = (loanId: string, amount: number) => {
@@ -32,6 +33,22 @@ function App() {
         return {
           ...loan,
           payments: [...loan.payments, {
+            id: crypto.randomUUID(),
+            amount,
+            date: new Date().toISOString()
+          }]
+        };
+      }
+      return loan;
+    }));
+  };
+
+  const handleAddMoney = (loanId: string, amount: number) => {
+    setLoans(prev => prev.map(loan => {
+      if (loan.id === loanId) {
+        return {
+          ...loan,
+          additions: [...loan.additions, {
             id: crypto.randomUUID(),
             amount,
             date: new Date().toISOString()
@@ -95,6 +112,7 @@ function App() {
               key={loan.id}
               loan={loan}
               onAddPayment={handleAddPayment}
+              onAddMoney={handleAddMoney}
               onMarkPaid={handleMarkPaid}
             />
           ))}
