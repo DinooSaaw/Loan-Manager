@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Banknote, Calendar, CheckCircle, User } from 'lucide-react';
+import { Banknote, Calendar, CheckCircle, User, FilePen } from 'lucide-react';
 import { calculateLoan } from '../utils/loanCalculations';
 import type { Loan } from '../types';
+import { generateLoanNotice } from '../utils/Notice'
 
 interface LoanCardProps {
   loan: Loan;
@@ -21,6 +22,29 @@ export function LoanCard({ loan, onAddPayment, onAddMoney, onMarkPaid }: LoanCar
     setPaymentAmount('');
   };
 
+  const CreateNotice = (loan: Loan) => {
+    console.log(loan)
+    const formattedDate = new Date().toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+
+
+    // Example usage
+    generateLoanNotice({
+      recipientName: loan.borrowerName,
+      lenderName: "",
+      startDate: loan.startDate,
+      date: formattedDate,
+      originalAmount: loan.principal,
+      previousBalance: currentBalance,
+      interestRate: (loan.interestRate * 100).toFixed(2),
+      newBalance: nextBalance,
+      fileName: `Notice ${loan.borrowerName} ${formattedDate}.pdf`
+    });
+  }
+
   const handleAddMoney = (e: React.FormEvent) => {
     e.preventDefault();
     onAddMoney(loan.id, Number(additionAmount));
@@ -29,7 +53,17 @@ export function LoanCard({ loan, onAddPayment, onAddMoney, onMarkPaid }: LoanCar
 
   return (
     <div className={`bg-gray-800 p-6 rounded-lg shadow-lg ${loan.isPaid ? 'opacity-75' : ''}`}>
+
       <div className="flex justify-between items-start mb-4">
+
+        <button
+          onClick={() => CreateNotice(loan)}
+          className="text-green-400 hover:text-green-300"
+          title="Create Notice"
+        >
+          <FilePen className="w-5 h-5" />
+        </button>
+
         <h3 className="text-xl font-bold text-green-400">{loan.description}</h3>
         {loan.isPaid ? (
           <span className="bg-green-500 text-white px-2 py-1 rounded-md text-sm">Paid</span>
@@ -43,14 +77,14 @@ export function LoanCard({ loan, onAddPayment, onAddMoney, onMarkPaid }: LoanCar
           </button>
         )}
       </div>
-      
+
       <div className="space-y-4">
         <div className="flex items-center text-gray-300">
           <User className="w-5 h-5 mr-2 text-green-400" />
           <span>
             Borrower: {loan.borrowerName}
             <div>
-            ID: {loan.borrowerId}
+              ID: {loan.borrowerId}
             </div>
           </span>
         </div>
@@ -59,7 +93,7 @@ export function LoanCard({ loan, onAddPayment, onAddMoney, onMarkPaid }: LoanCar
           <Banknote className="w-5 h-5 mr-2 text-green-400" />
           <span>Principal: ${(loan.principal.toFixed(2))}</span>
         </div>
-        
+
         <div className="flex items-center text-gray-300">
           <Calendar className="w-5 h-5 mr-2 text-green-400" />
           <span>Started: {new Date(loan.startDate).toLocaleDateString()}</span>
