@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { PlusCircle, X } from 'lucide-react';
+import { Loan } from '../types';
 
 interface LoanFormProps {
   onSubmit: (loan: Omit<Loan, 'id' | 'payments' | 'isPaid'>) => void;
@@ -27,12 +28,9 @@ export function LoanForm({ onSubmit, onCancel }: LoanFormProps) {
       interestRate: Number(formData.interestRate) / 100,
       startDate: formData.startDate,
       interestType: formData.interestType as 'daily' | 'weekly',
+      description: formData.description.trim() || '', // Ensure description is always included
+      additions: [], // Provide a default empty array for additions
     };
-
-    // Only include description if it's not empty
-    if (formData.description.trim()) {
-      loanData.description = formData.description;
-    }
 
     onSubmit(loanData);
 
