@@ -70,11 +70,17 @@ function App() {
 
   const filteredLoans = loans.filter(loan => {
     const searchLower = searchTerm.toLowerCase();
-    return (
-      loan.id.toLowerCase().includes(searchLower) ||
-      loan.borrowerName.toLowerCase().includes(searchLower) ||
-      loan.borrowerId.toLowerCase().includes(searchLower)
-    );
+
+    // Show unpaid loans or paid loans only if there is a search term
+    if (!loan.isPaid || searchTerm.trim() !== '') {
+      return (
+        loan.id.toLowerCase().includes(searchLower) ||
+        loan.borrowerName.toLowerCase().includes(searchLower) ||
+        loan.borrowerId.toLowerCase().includes(searchLower)
+      );
+    }
+
+    return false;
   });
 
   return (

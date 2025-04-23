@@ -34,7 +34,7 @@ export function LoanCard({ loan, onAddPayment, onAddMoney, onMarkPaid }: LoanCar
     // Example usage
     generateLoanNotice({
       recipientName: loan.borrowerName,
-      lenderName: "",
+      lenderName: "Riley",
       startDate: loan.startDate,
       date: formattedDate,
       originalAmount: loan.principal,
