@@ -52,36 +52,34 @@ if (diffInWeeks >= 1) {
   duration = `${diffInDays} day${diffInDays > 1 ? 's' : ''}`;
 }
 
+drawText('Loan Interest Notice', 200, y, titleSize); y -= 40;
+drawText(`Date: ${date}`, 50, y); y -= 30;
+drawText(`To: ${recipientName}`, 50, y); y -= 30;
+drawText(`From: ${lenderName}`, 50, y); y -= 40;
 
-  drawText('Loan Interest Notice', 200, y, titleSize); y -= 40;
-  drawText(`Date: ${date}`, 50, y); y -= 30;
-  drawText(`To: ${recipientName}`, 50, y); y -= 30;
-  drawText(`From: ${lenderName}`, 50, y); y -= 40;
+drawText(`Dear ${recipientName},`, 50, y); y -= 30;
+drawText(`This notice serves as a formal reminder regarding the loan agreement established ${duration} ago.`, 50, y); y -= 20;
+drawText('As per the agreed terms, interest is applied weekly to the outstanding loan balance.', 50, y); y -= 30;
 
-  drawText(`Dear ${recipientName},`, 50, y); y -= 30;
-  drawText(  `This notice serves as an official reminder regarding the loan agreement entered into ${duration} ago.`, 50, y); y -= 20;
-  drawText('As outlined in our agreed-upon terms, interest is applied weekly to the outstanding loan balance.', 50, y); y -= 30;
+drawText('Please find the updated loan details below:', 50, y); y -= 40;
 
-  drawText('Please review the updated loan information below:', 50, y); y -= 40;
+drawText('Loan Summary', 50, y); y -= 20;
+drawText(`Original Loan Amount: $${originalAmount}`, 60, y); y -= 20;
+drawText(`Current Balance: $${previousBalance}`, 60, y); y -= 20;
+drawText(`Interest Rate: ${interestRate}% per week`, 60, y); y -= 20;
+drawText(`Updated Balance Due: $${newBalance}`, 60, y); y -= 40;
 
-  drawText('Loan Summary', 50, y); y -= 20;
-  drawText(`Original Loan Amount: $${originalAmount}`, 60, y); y -= 20;
-  drawText(`Previous Balance: $${previousBalance}`, 60, y); y -= 20;
-  drawText(`Interest Rate: ${interestRate}% per week`, 60, y); y -= 20;
-  drawText(`New Balance Due: $${newBalance}`, 60, y); y -= 40;
+drawText('Failure to adhere to the terms of this agreement may result in additional penalties or legal action.', 50, y); y -= 20;
+drawText('This agreement is legally binding and enforceable under applicable law.', 50, y); y -= 20;
+drawText('If you have any questions or believe there is an error in this notice, please contact us promptly.', 50, y); y -= 30;
 
-  drawText('Failure to comply with the terms of this agreement may result in additional penalties or legal action.', 50, y); y -= 20;
-  drawText('This agreement is considered legally binding and enforceable under applicable law.', 50, y); y -= 20;
-  drawText('If you have any questions or believe there is an error in this notice, please contact me as soon as possible.', 50, y); y -= 30;
+drawText('Thank you for your prompt attention to this matter.', 50, y); y -= 40;
 
-  drawText('Thank you for your attention to this matter.', 50, y); y -= 40;
+drawText('Sincerely,', 50, y); y -= 20;
+drawText(lenderName, 50, y); y -= 40;
 
-  drawText('Sincerely,', 50, y); y -= 20;
-  drawText(lenderName, 50, y); y -= 40;
-
-  drawText('The loan agreement you signed is a legally binding contract. Continued non-compliance may lead to court', 50, y); y -= 20;
-  drawText('enforcement. Please ensure that you honor all terms and conditions to avoid further consequences.', 50, y);
-
+drawText('The loan agreement you signed is a legally binding contract. Continued non-compliance may result in court', 50, y); y -= 20;
+drawText('enforcement. Please ensure that you fulfill all terms and conditions to avoid further consequences.', 50, y);
   const pdfBytes = await pdfDoc.save();
 
   // 👉 Trigger download in the browser
