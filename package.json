@@ -1,12 +1,13 @@
 {
   "name": "loan-manager",
   "author": "DinooSaaw",
+  "description": "A loan management application to track loans, payments, and generate notices.",
   "repository": {
     "type": "git",
     "url": "https://github.com/DinooSaaw/Loan-Manager.git"
   },
   "private": true,
-  "version": "1.0.5",
+  "version": "1.0.6",
   "type": "module",
   "main": "electron/main.js",
   "scripts": {
@@ -44,7 +45,7 @@
     "vite-plugin-electron": "^0.28.4"
   },
   "build": {
-    "appId": "com.electron.your-app",
+    "appId": "com.electron.loanmanager",
     "directories": {
       "output": "dist-electron"
     },
@@ -52,13 +53,16 @@
       "dist/**/*",
       "electron/**/*"
     ],
-    "mac": {
-      "category": "public.app-category.utilities"
-    },
     "win": {
+      "icon": "electron/assets/icon.ico",
       "target": "nsis"
     },
+    "mac": {
+      "icon": "electron/assets/icon.icns",
+      "category": "public.app-category.finance"
+    },
     "linux": {
+      "icon": "electron/assets/icon.png",
       "target": "AppImage"
     }
   }
