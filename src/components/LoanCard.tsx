@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Banknote, Calendar, CheckCircle, User, FilePen } from 'lucide-react';
+import { Banknote, Calendar, CheckCircle, User, FilePen, BellRing  } from 'lucide-react';
 import { calculateLoan } from '../utils/loanCalculations';
 import type { Loan } from '../types';
-import { generateLoanNotice } from '../utils/Notice'
+import { generateLoanNotice, generateLoanReminder } from '../utils/Notice'
 
 interface LoanCardProps {
   loan: Loan;
@@ -34,7 +34,7 @@ export function LoanCard({ loan, onAddPayment, onAddMoney, onMarkPaid }: LoanCar
     // Example usage
     generateLoanNotice({
       recipientName: loan.borrowerName,
-      lenderName: "Riley",
+      lenderName: "",
       startDate: loan.startDate,
       date: formattedDate,
       originalAmount: loan.principal,
@@ -42,6 +42,29 @@ export function LoanCard({ loan, onAddPayment, onAddMoney, onMarkPaid }: LoanCar
       interestRate: (loan.interestRate * 100).toFixed(2),
       newBalance: nextBalance,
       fileName: `Notice ${loan.borrowerName} ${formattedDate}.pdf`
+    });
+  }
+
+  const CreateReminder = (loan: Loan) => {
+    console.log(loan)
+    const formattedDate = new Date().toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+
+
+    // Example usage
+    generateLoanReminder({
+      recipientName: loan.borrowerName,
+      lenderName: "",
+      startDate: loan.startDate,
+      date: formattedDate,
+      originalAmount: loan.principal,
+      previousBalance: currentBalance,
+      interestRate: (loan.interestRate * 100).toFixed(2),
+      newBalance: nextBalance,
+      fileName: `Reminder ${loan.borrowerName} ${formattedDate}.pdf`
     });
   }
 
@@ -56,13 +79,22 @@ export function LoanCard({ loan, onAddPayment, onAddMoney, onMarkPaid }: LoanCar
 
       <div className="flex justify-between items-start mb-4">
 
-        <button
-          onClick={() => CreateNotice(loan)}
-          className="text-green-400 hover:text-green-300"
-          title="Create Notice"
-        >
-          <FilePen className="w-5 h-5" />
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => CreateReminder(loan)}
+            className="text-green-400 hover:text-blue-300"
+            title="Create Reminder"
+          >
+            <BellRing className="w-5 h-5" />
+          </button>
+          <button
+            onClick={() => CreateNotice(loan)}
+            className="text-green-400 hover:text-blue-300"
+            title="Create Notice"
+          >
+            <FilePen className="w-5 h-5" />
+          </button>
+        </div>
 
         <h3 className="text-xl font-bold text-green-400">{loan.description}</h3>
         {loan.isPaid ? (
@@ -70,7 +102,7 @@ export function LoanCard({ loan, onAddPayment, onAddMoney, onMarkPaid }: LoanCar
         ) : (
           <button
             onClick={() => onMarkPaid(loan.id)}
-            className="text-green-400 hover:text-green-300"
+            className="text-green-400 hover:text-blue-300"
             title="Mark as paid"
           >
             <CheckCircle className="w-5 h-5" />
