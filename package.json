@@ -16,7 +16,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "electron:dev": "concurrently \"vite\" \"electron .\"",
-    "electron:build": "vite build && electron-builder"
+    "electron:build": "dotenv -e .env -- vite build && dotenv -e .env -- electron-builder --publish always"
   },
   "dependencies": {
     "electron-updater": "^6.6.2",
@@ -32,6 +32,7 @@
     "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.4.18",
     "concurrently": "^8.2.2",
+    "dotenv-cli": "^8.0.0",
     "electron": "^29.1.0",
     "electron-builder": "^24.12.0",
     "eslint": "^9.9.1",
