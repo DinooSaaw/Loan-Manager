@@ -48,6 +48,13 @@
   },
   "build": {
     "appId": "com.electron.loanmanager",
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "DinooSaaw",
+        "repo": "Loan-Manager"
+      }
+    ],
     "directories": {
       "output": "dist-electron"
     },
