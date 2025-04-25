@@ -1,7 +1,8 @@
 import { app, BrowserWindow } from 'electron';
-import { autoUpdater } from 'electron-updater';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import pkg from 'electron-updater';
+const { autoUpdater } = pkg;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -16,9 +17,10 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
-    }
+    },
   });
 
+  // Load the local development server or the built files
   if (isDev) {
     mainWindow.loadURL('http://localhost:5173');
     mainWindow.webContents.openDevTools();
@@ -26,7 +28,7 @@ function createWindow() {
     mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
   }
 
-  // Auto-updater events
+  // Listen for update events
   autoUpdater.on('update-available', () => {
     mainWindow.webContents.send('update_available');
   });
@@ -40,7 +42,9 @@ app.whenReady().then(() => {
   createWindow();
 
   // Check for updates
-  autoUpdater.checkForUpdatesAndNotify();
+  if (!isDev) {
+    autoUpdater.checkForUpdatesAndNotify();
+  }
 
   app.on('activate', function () {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
