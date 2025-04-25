@@ -2,16 +2,18 @@ import React, { useState } from 'react';
 import { Banknote, Calendar, CheckCircle, User, FilePen, BellRing  } from 'lucide-react';
 import { calculateLoan } from '../utils/loanCalculations';
 import type { Loan } from '../types';
-import { generateLoanNotice, generateLoanReminder } from '../utils/Notice'
+import { generateLoanNotice, generateLoanReminder, generatePauseNotice, generateResumeNotice } from '../utils/Notice'
 
 interface LoanCardProps {
   loan: Loan;
   onAddPayment: (loanId: string, amount: number) => void;
   onAddMoney: (loanId: string, amount: number) => void;
   onMarkPaid: (loanId: string) => void;
+  onPauseLoan: (loanId: string, cycles: number) => void;
+  onResumeLoan: (loanId: string) => void; // New prop
 }
 
-export function LoanCard({ loan, onAddPayment, onAddMoney, onMarkPaid }: LoanCardProps) {
+export function LoanCard({ loan, onAddPayment, onAddMoney, onMarkPaid, onPauseLoan, onResumeLoan }: LoanCardProps) {
   const [paymentAmount, setPaymentAmount] = useState('');
   const [additionAmount, setAdditionAmount] = useState('');
   const { currentBalance, nextBalance, daysOrWeeksPassed } = calculateLoan(loan);
@@ -34,7 +36,7 @@ export function LoanCard({ loan, onAddPayment, onAddMoney, onMarkPaid }: LoanCar
     // Example usage
     generateLoanNotice({
       recipientName: loan.borrowerName,
-      lenderName: "",
+      lenderName: "Riley",
       startDate: loan.startDate,
       date: formattedDate,
       originalAmount: loan.principal,
@@ -54,10 +56,9 @@ export function LoanCard({ loan, onAddPayment, onAddMoney, onMarkPaid }: LoanCar
     });
 
 
-    // Example usage
     generateLoanReminder({
       recipientName: loan.borrowerName,
-      lenderName: "",
+      lenderName: "Riley",
       startDate: loan.startDate,
       date: formattedDate,
       originalAmount: loan.principal,
@@ -75,7 +76,7 @@ export function LoanCard({ loan, onAddPayment, onAddMoney, onMarkPaid }: LoanCar
   };
 
   return (
-    <div className={`bg-gray-800 p-6 rounded-lg shadow-lg ${loan.isPaid ? 'opacity-75' : ''}`}>
+    <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
 
       <div className="flex justify-between items-start mb-4">
 
@@ -210,6 +211,41 @@ export function LoanCard({ loan, onAddPayment, onAddMoney, onMarkPaid }: LoanCar
           </div>
         )}
       </div>
+      {loan.pausedCycles === 0 && (
+        <button
+          onClick={() => {
+            onPauseLoan(loan.id, 1); // Pause for 1 cycle
+            generatePauseNotice({
+              recipientName: loan.borrowerName,
+              lenderName: 'Riley',
+              date: new Date().toLocaleDateString(),
+              cyclesPaused: 1,
+              interestType: loan.interestType,
+            });
+          }}
+          className="text-yellow-400 hover:text-yellow-300"
+        >
+          Pause Loan
+        </button>
+      )}
+      {loan.pausedCycles > 0 && (
+        <button
+          onClick={() => {
+            onResumeLoan(loan.id);
+            generateResumeNotice({
+              recipientName: loan.borrowerName,
+              lenderName: 'Riley',
+              date: new Date().toLocaleDateString(),
+              originalAmount: loan.principal,
+              interestRate: (loan.interestRate * 100).toFixed(2),
+              startDate: loan.startDate,
+            });
+          }}
+          className="text-blue-400 hover:text-blue-300 ml-4"
+        >
+          Resume Loan
+        </button>
+      )}
     </div>
   );
 }

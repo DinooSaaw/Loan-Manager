@@ -68,6 +68,24 @@ function App() {
     }));
   };
 
+  const handlePauseLoan = (loanId: string, cycles: number) => {
+    setLoans(prev =>
+      prev.map(loan =>
+        loan.id === loanId ? { ...loan, pausedCycles: loan.pausedCycles + cycles } : loan
+      )
+    );
+  };
+
+  const handleResumeLoan = (loanId: string) => {
+    setLoans(prev =>
+      prev.map(loan =>
+        loan.id === loanId && loan.pausedCycles > 0
+          ? { ...loan, pausedCycles: loan.pausedCycles - 1 }
+          : loan
+      )
+    );
+  };
+
   const filteredLoans = loans.filter(loan => {
     const searchLower = searchTerm.toLowerCase();
 
@@ -120,6 +138,8 @@ function App() {
               onAddPayment={handleAddPayment}
               onAddMoney={handleAddMoney}
               onMarkPaid={handleMarkPaid}
+              onPauseLoan={handlePauseLoan}
+              onResumeLoan={handleResumeLoan}
             />
           ))}
         </div>
@@ -128,4 +148,4 @@ function App() {
   );
 }
 
-export default App
+export default App;
