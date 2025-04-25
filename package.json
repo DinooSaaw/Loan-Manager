@@ -7,7 +7,7 @@
     "url": "https://github.com/DinooSaaw/Loan-Manager.git"
   },
   "private": true,
-  "version": "1.0.7",
+  "version": "1.0.8",
   "type": "module",
   "main": "electron/main.js",
   "scripts": {
@@ -19,6 +19,7 @@
     "electron:build": "vite build && electron-builder"
   },
   "dependencies": {
+    "electron-updater": "^6.6.2",
     "lucide-react": "^0.344.0",
     "pdf-lib": "^1.17.1",
     "react": "^18.3.1",
@@ -64,6 +65,13 @@
     "linux": {
       "icon": "electron/assets/icon.png",
       "target": "AppImage"
-    }
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "DinooSaaw",
+        "repo": "Loan-Manager"
+      }
+    ]
   }
 }
