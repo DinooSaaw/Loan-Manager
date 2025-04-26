@@ -10,6 +10,7 @@ export interface Loan {
   payments: Payment[];
   additions: Addition[];
   isPaid: boolean;
+  pausedCycles: number; // New property to track paused cycles
 }
 
 export interface Payment {

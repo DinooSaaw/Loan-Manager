@@ -30,6 +30,7 @@ export function LoanForm({ onSubmit, onCancel }: LoanFormProps) {
       interestType: formData.interestType as 'daily' | 'weekly',
       description: formData.description.trim() || '', // Ensure description is always included
       additions: [], // Provide a default empty array for additions
+      pausedCycles: 0, // Provide a default value for pausedCycles
     };
 
     onSubmit(loanData);
