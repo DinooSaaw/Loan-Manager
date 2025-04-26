@@ -10,13 +10,14 @@
   "type": "module",
   "main": "electron/main.js",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "lint": "eslint .",
-    "preview": "vite preview",
     "electron:dev": "concurrently \"vite\" \"electron .\"",
-    "electron:build": "vite build &&  electron-builder",
-    "electron:publish": "dotenv -e .env -- vite build && dotenv -e .env -- electron-builder --publish always"
+    "electron:build": "npm run prebuild && vite build && electron-builder",
+    "electron:publish": "dotenv -e .env -- vite build && dotenv -e .env -- electron-builder --publish always",
+    "dev": "vite",
+    "prebuild": "taskkill /IM electron.exe /F || exit 0",
+    "preview": "vite preview",
+    "build": "vite build",
+    "lint": "eslint ."
   },
   "dependencies": {
     "electron-updater": "^6.6.2",
