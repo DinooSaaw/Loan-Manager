@@ -3,12 +3,27 @@ import type { Loan, LoanCalculation } from '../types';
 export const calculateLoan = (loan: Loan): LoanCalculation => {
   const now = new Date();
   const start = new Date(loan.startDate);
+  if (isNaN(start.getTime())) {
+    console.error('Invalid startDate:', loan.startDate);
+    return {
+      currentBalance: 0,
+      nextBalance: 0,
+      daysOrWeeksPassed: 0,
+    };
+  }
+
   const msInDay = 1000 * 60 * 60 * 24;
 
-  const getPeriodIndex = (date: Date): number =>
-    loan.interestType === 'daily'
+  const getPeriodIndex = (date: Date): number => {
+    const start = new Date(loan.startDate);
+    if (isNaN(start.getTime())) {
+      console.error('Invalid startDate:', loan.startDate);
+      return NaN;
+    }
+    return loan.interestType === 'daily'
       ? Math.floor((date.getTime() - start.getTime()) / msInDay)
       : Math.floor((date.getTime() - start.getTime()) / (msInDay * 7));
+  };
 
   const currentPeriod = getPeriodIndex(now);
 
