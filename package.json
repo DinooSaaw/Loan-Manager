@@ -72,6 +72,13 @@
     "linux": {
       "icon": "electron/assets/icon.png",
       "target": "AppImage"
-    }
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "DinooSaaw",
+        "repo": "Loan-Manager"
+      }
+    ]
   }
 }
