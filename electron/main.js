@@ -21,12 +21,14 @@ function createWindow() {
   });
 
   // Load the local development server or the built files
-  if (isDev) {
-    mainWindow.loadURL('http://localhost:5173');
-    mainWindow.webContents.openDevTools();
-  } else {
-    mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
-  }
+if (isDev) {
+  mainWindow.loadURL('http://localhost:5173');
+  mainWindow.title = `${title}-Dev`;
+  mainWindow.webContents.openDevTools();
+} else {
+  mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
+}
+
 
   // Listen for update events
   autoUpdater.on('update-available', () => {
@@ -43,6 +45,7 @@ app.whenReady().then(() => {
 
   // Check for updates
   if (!isDev) {
+    console.log("Checking for updates")
     autoUpdater.checkForUpdatesAndNotify();
   }
 
