@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Banknote, Calendar, CheckCircle, User, FilePen, BellRing, Pause, Play } from 'lucide-react';
 import { calculateLoan } from '../utils/loanCalculations';
 import type { Loan } from '../types';
@@ -20,10 +20,22 @@ export function LoanCard({ loan, onAddPayment, onAddMoney, onMarkPaid, onPauseLo
   const { currentBalance, nextBalance, daysOrWeeksPassed } = calculateLoan(loan);
   const isOutdated = isLoanOutdated(loan);
 
+  // Auto-mark as paid when balance is zero or below and not already marked
+  useEffect(() => {
+    if (!loan.isPaid && currentBalance <= 0) {
+      onMarkPaid(loan.id);
+    }
+  }, [currentBalance, loan.isPaid, loan.id, onMarkPaid]);
+
   const handlePayment = (e: React.FormEvent) => {
     e.preventDefault();
     onAddPayment(loan.id, Number(paymentAmount));
     setPaymentAmount('');
+    // Check if the payment will bring the balance to 0 or below, and mark as paid if so
+    const newBalance = currentBalance - Number(paymentAmount);
+    if (!loan.isPaid && newBalance <= 0) {
+      onMarkPaid(loan.id);
+    }
   };
 
   const CreateNotice = (loan: Loan) => {
@@ -85,7 +97,7 @@ export function LoanCard({ loan, onAddPayment, onAddMoney, onMarkPaid, onPauseLo
           title="This loan is missing required data."
           style={{ transform: 'translate(-50%, -50%)', left: '50%' }}
         >
-          Outdated
+          Outdated!
         </span>
       )}
 
@@ -96,6 +108,8 @@ export function LoanCard({ loan, onAddPayment, onAddMoney, onMarkPaid, onPauseLo
             onClick={() => CreateReminder(loan)}
             className="text-green-400 hover:text-blue-300"
             title="Create Reminder"
+            disabled={loan.isPaid} // Disable if paid
+            style={loan.isPaid ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
           >
             <BellRing className="w-5 h-5" />
           </button>
@@ -103,6 +117,8 @@ export function LoanCard({ loan, onAddPayment, onAddMoney, onMarkPaid, onPauseLo
             onClick={() => CreateNotice(loan)}
             className="text-green-400 hover:text-blue-300"
             title="Create Notice"
+            disabled={loan.isPaid} // Disable if paid
+            style={loan.isPaid ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
           >
             <FilePen className="w-5 h-5" />
           </button>
@@ -120,6 +136,8 @@ export function LoanCard({ loan, onAddPayment, onAddMoney, onMarkPaid, onPauseLo
               }}
               className="text-green-400 hover:text-blue-300"
               title="Pause Loan"
+              disabled={loan.isPaid} // Disable if paid
+              style={loan.isPaid ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
             >
               <Pause className="w-5 h-5" />
             </button>
@@ -139,6 +157,8 @@ export function LoanCard({ loan, onAddPayment, onAddMoney, onMarkPaid, onPauseLo
               }}
               className="text-green-400 hover:text-blue-300"
               title="Resume Loan"
+              disabled={loan.isPaid} // Disable if paid
+              style={loan.isPaid ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
             >
               <Play className="w-5 h-5" />
             </button>
