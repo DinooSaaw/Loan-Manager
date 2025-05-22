@@ -3,8 +3,7 @@ import { LoanForm } from './components/LoanForm';
 import { LoanCard } from './components/LoanCard';
 import { SearchBar } from './components/SearchBar';
 import { Coins, PlusCircle } from 'lucide-react';
-// Remove loadLoans import
-import { saveLoans } from './utils/loanStorage';
+import { saveLoans, loadLoans } from './utils/loanStorage'; // <-- Add loadLoans import
 import type { Loan } from './types';
 import { SettingsPage } from './components/SettingsPage';
 
@@ -16,13 +15,28 @@ function App() {
 
   // Fetch loans from MongoDB on mount
   useEffect(() => {
-    async function fetchLoans() {
+    // 1. Load local loans first
+    const localLoans = loadLoans() || [];
+    setLoans(localLoans);
+
+    // 2. Then fetch from MongoDB and merge (if available)
+    async function fetchDbLoans() {
       if (window.electronAPI?.getLoansFromMongo) {
         const dbLoans = await window.electronAPI.getLoansFromMongo();
-        setLoans(dbLoans);
+        if (dbLoans && dbLoans.length > 0) {
+          setLoans(currentLoans => {
+            // Merge: keep all local loans, add db loans that aren't already present by id
+            const localIds = new Set(currentLoans.map(l => l.id));
+            const merged = [
+              ...currentLoans,
+              ...dbLoans.filter(dbLoan => !localIds.has(dbLoan.id))
+            ];
+            return merged;
+          });
+        }
       }
     }
-    fetchLoans();
+    fetchDbLoans();
   }, []);
 
   useEffect(() => {
