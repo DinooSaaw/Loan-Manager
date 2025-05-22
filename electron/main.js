@@ -1,13 +1,48 @@
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, ipcMain } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import pkg from 'electron-updater';
+import { MongoClient } from 'mongodb';
+
 const { autoUpdater } = pkg;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const isDev = process.env.NODE_ENV === 'development';
+
+const mongoUri = '';
+const dbName = '';
+const collectionName = '';
+
+let db, collection;
+
+async function connectMongo() {
+  if (!db) {
+    const client = new MongoClient(mongoUri);
+    await client.connect();
+    db = client.db(dbName);
+    collection = db.collection(collectionName);
+  }
+}
+
+ipcMain.handle('mongo-add-loan', async (event, loan) => {
+  await connectMongo();
+  const result = await collection.insertOne(loan);
+  return result.insertedId;
+});
+
+ipcMain.handle('mongo-update-loan', async (event, loan) => {
+  await connectMongo();
+  await collection.updateOne({ id: loan.id }, { $set: loan }, { upsert: true });
+  return true;
+});
+
+ipcMain.handle('mongo-get-loans', async () => {
+  await connectMongo();
+  const loans = await collection.find({}).toArray();
+  return loans;
+});
 
 function createWindow() {
   const mainWindow = new BrowserWindow({
@@ -22,13 +57,14 @@ function createWindow() {
   });
 
   // Load the local development server or the built files
-if (isDev) {
-  mainWindow.loadURL('http://localhost:5173');
-  mainWindow.title = `${title}-Dev`;
-  mainWindow.webContents.openDevTools();
-} else {
-  mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
-}
+  let title = "Loan Manager"
+  if (isDev) {
+    mainWindow.loadURL('http://localhost:5173');
+    mainWindow.title = `${title} -Dev`;
+    mainWindow.webContents.openDevTools();
+  } else {
+    mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
+  }
 
 
   // Listen for update events

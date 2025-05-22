@@ -3,28 +3,55 @@ import { LoanForm } from './components/LoanForm';
 import { LoanCard } from './components/LoanCard';
 import { SearchBar } from './components/SearchBar';
 import { Coins, PlusCircle } from 'lucide-react';
-import { loadLoans, saveLoans } from './utils/loanStorage';
+// Remove loadLoans import
+import { saveLoans } from './utils/loanStorage';
 import type { Loan } from './types';
 
 function App() {
-  const [loans, setLoans] = useState<Loan[]>(() => loadLoans());
+  const [loans, setLoans] = useState<Loan[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [showLoanForm, setShowLoanForm] = useState(false);
+
+  // Fetch loans from MongoDB on mount
+  useEffect(() => {
+    async function fetchLoans() {
+      if (window.electronAPI?.getLoansFromMongo) {
+        const dbLoans = await window.electronAPI.getLoansFromMongo();
+        setLoans(dbLoans);
+      }
+    }
+    fetchLoans();
+  }, []);
 
   useEffect(() => {
     saveLoans(loans);
   }, [loans]);
 
-  const handleCreateLoan = (loanData: Omit<Loan, 'id' | 'payments' | 'isPaid'>) => {
+  const handleCreateLoan = async (loanData: Omit<Loan, 'id' | 'payments' | 'isPaid'> & { synced?: boolean }) => {
     const newLoan: Loan = {
       ...loanData,
       id: crypto.randomUUID(),
       payments: [],
       additions: [],
-      isPaid: false
+      isPaid: false,
+      synced: loanData.synced || false,
     };
+
+    if (newLoan.synced && window.electronAPI?.addLoanToMongo) {
+      await window.electronAPI.addLoanToMongo(newLoan);
+    }
+
     setLoans(prev => [...prev, newLoan]);
     setShowLoanForm(false);
+  };
+
+  const handleUpdateLoan = async (updatedLoan: Loan) => {
+    setLoans(prev =>
+      prev.map(loan => loan.id === updatedLoan.id ? updatedLoan : loan)
+    );
+    if (updatedLoan.synced && window.electronAPI?.updateLoanInMongo) {
+      await window.electronAPI.updateLoanInMongo(updatedLoan);
+    }
   };
 
   const handleAddPayment = (loanId: string, amount: number) => {
@@ -86,6 +113,14 @@ function App() {
     );
   };
 
+  const handleSyncLoan = (loanId: string) => {
+    setLoans(loans =>
+      loans.map(loan =>
+        loan.id === loanId ? { ...loan, synced: true } : loan
+      )
+    );
+  };
+
   const filteredLoans = loans.filter(loan => {
     const searchLower = searchTerm.toLowerCase();
 
@@ -140,6 +175,7 @@ function App() {
               onMarkPaid={handleMarkPaid}
               onPauseLoan={handlePauseLoan}
               onResumeLoan={handleResumeLoan}
+              onSyncLoan={handleSyncLoan}
             />
           ))}
         </div>

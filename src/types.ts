@@ -11,6 +11,7 @@ export interface Loan {
   additions: Addition[];
   isPaid: boolean;
   pausedCycles: number; // New property to track paused cycles
+  synced?: boolean; // Add this line
 }
 
 export interface Payment {
