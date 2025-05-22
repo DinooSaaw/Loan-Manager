@@ -18,7 +18,7 @@ let collectionName = '';
 let db, collection;
 
 async function connectMongo() {
-  if (!db) {
+  if (!db & mongoUri != "") {
     const client = new MongoClient(mongoUri);
     await client.connect();
     db = client.db(dbName);
@@ -27,12 +27,14 @@ async function connectMongo() {
 }
 
 ipcMain.handle('mongo-add-loan', async (event, loan) => {
+  if (!mongoUri || !dbName || !collectionName) return null;
   await connectMongo();
   const result = await collection.insertOne(loan);
   return result.insertedId;
 });
 
 ipcMain.handle('mongo-update-loan', async (event, loan) => {
+  if (!mongoUri || !dbName || !collectionName) return false;
   await connectMongo();
   // Remove _id if present
   const { _id, ...loanWithoutId } = loan;
@@ -41,6 +43,7 @@ ipcMain.handle('mongo-update-loan', async (event, loan) => {
 });
 
 ipcMain.handle('mongo-get-loans', async () => {
+  if (!mongoUri || !dbName || !collectionName) return [];
   await connectMongo();
   const loans = await collection.find({}).toArray();
   return loans;
