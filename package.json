@@ -16,9 +16,7 @@
     "electron:publish": "dotenv -e .env -- vite build && dotenv -e .env -- electron-builder --publish always",
     "dev": "vite",
     "prebuild": "taskkill /IM electron.exe /F || taskkill /IM loan-manager.exe /F || exit 0",
-    "preview": "vite preview",
-    "electron:dev": "concurrently \"vite\" \"electron .\"",
-    "electron:build": "dotenv -e .env -- vite build && dotenv -e .env -- electron-builder --publish always"
+    "preview": "vite preview"
   },
   "dependencies": {
     "electron-updater": "^6.6.2",
