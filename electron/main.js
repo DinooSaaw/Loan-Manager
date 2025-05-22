@@ -11,9 +11,9 @@ const __dirname = path.dirname(__filename);
 
 const isDev = process.env.NODE_ENV === 'development';
 
-const mongoUri = '';
-const dbName = '';
-const collectionName = '';
+let mongoUri = '';
+let dbName = '';
+let collectionName = '';
 
 let db, collection;
 
@@ -34,7 +34,9 @@ ipcMain.handle('mongo-add-loan', async (event, loan) => {
 
 ipcMain.handle('mongo-update-loan', async (event, loan) => {
   await connectMongo();
-  await collection.updateOne({ id: loan.id }, { $set: loan }, { upsert: true });
+  // Remove _id if present
+  const { _id, ...loanWithoutId } = loan;
+  await collection.updateOne({ id: loan.id }, { $set: loanWithoutId }, { upsert: true });
   return true;
 });
 
@@ -42,6 +44,18 @@ ipcMain.handle('mongo-get-loans', async () => {
   await connectMongo();
   const loans = await collection.find({}).toArray();
   return loans;
+});
+
+ipcMain.handle('get-mongo-settings', () => {
+  return { mongoUri, dbName, collectionName };
+});
+
+ipcMain.handle('set-mongo-settings', async (event, settings) => {
+  mongoUri = settings.mongoUri;
+  dbName = settings.dbName;
+  collectionName = settings.collectionName;
+  db = undefined; // Force reconnect with new settings
+  return true;
 });
 
 function createWindow() {

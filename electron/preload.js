@@ -7,4 +7,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   addLoanToMongo: (loan) => ipcRenderer.invoke('mongo-add-loan', loan),
   updateLoanInMongo: (loan) => ipcRenderer.invoke('mongo-update-loan', loan),
   getLoansFromMongo: () => ipcRenderer.invoke('mongo-get-loans'),
+  getMongoSettings: () => ipcRenderer.invoke('get-mongo-settings'),
+  setMongoSettings: (settings) => ipcRenderer.invoke('set-mongo-settings', settings),
+  refreshLoans: () => ipcRenderer.invoke('mongo-get-loans'),
 });

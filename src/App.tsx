@@ -6,11 +6,13 @@ import { Coins, PlusCircle } from 'lucide-react';
 // Remove loadLoans import
 import { saveLoans } from './utils/loanStorage';
 import type { Loan } from './types';
+import { SettingsPage } from './components/SettingsPage';
 
 function App() {
   const [loans, setLoans] = useState<Loan[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [showLoanForm, setShowLoanForm] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
 
   // Fetch loans from MongoDB on mount
   useEffect(() => {
@@ -45,19 +47,11 @@ function App() {
     setShowLoanForm(false);
   };
 
-  const handleUpdateLoan = async (updatedLoan: Loan) => {
-    setLoans(prev =>
-      prev.map(loan => loan.id === updatedLoan.id ? updatedLoan : loan)
-    );
-    if (updatedLoan.synced && window.electronAPI?.updateLoanInMongo) {
-      await window.electronAPI.updateLoanInMongo(updatedLoan);
-    }
-  };
-
-  const handleAddPayment = (loanId: string, amount: number) => {
+  const handleAddPayment = async (loanId: string, amount: number) => {
+    let updatedLoan: Loan | undefined;
     setLoans(prev => prev.map(loan => {
       if (loan.id === loanId) {
-        return {
+        updatedLoan = {
           ...loan,
           payments: [...loan.payments, {
             id: crypto.randomUUID(),
@@ -65,15 +59,23 @@ function App() {
             date: new Date().toISOString()
           }]
         };
+        return updatedLoan;
       }
       return loan;
     }));
+    // Update in Mongo if synced
+    if (updatedLoan?.synced && window.electronAPI?.updateLoanInMongo) {
+      console.log(`[DEBUG] (App.tsx:67:32) window.electronAPI?.updateLoanInMongo`, window.electronAPI?.updateLoanInMongo);
+      console.log(`[DEBUG] (App.tsx:67:9) updatedLoan?.synced`, updatedLoan?.synced);
+      await window.electronAPI.updateLoanInMongo(updatedLoan);
+    }
   };
 
-  const handleAddMoney = (loanId: string, amount: number) => {
+  const handleAddMoney = async (loanId: string, amount: number) => {
+    let updatedLoan: Loan | undefined;
     setLoans(prev => prev.map(loan => {
       if (loan.id === loanId) {
-        return {
+        updatedLoan = {
           ...loan,
           additions: [...loan.additions, {
             id: crypto.randomUUID(),
@@ -81,36 +83,55 @@ function App() {
             date: new Date().toISOString()
           }]
         };
+        return updatedLoan;
       }
       return loan;
     }));
+    if (updatedLoan?.synced && window.electronAPI?.updateLoanInMongo) {
+
+      console.log(`[DEBUG] (App.tsx:67:32) window.electronAPI?.updateLoanInMongo`, window.electronAPI?.updateLoanInMongo);
+      console.log(`[DEBUG] (App.tsx:67:9) updatedLoan?.synced`, updatedLoan?.synced);
+      await window.electronAPI.updateLoanInMongo(updatedLoan);
+    }
   };
 
   const handleMarkPaid = (loanId: string) => {
     setLoans(prev => prev.map(loan => {
       if (loan.id === loanId) {
-        return { ...loan, isPaid: true };
+        const updatedLoan = { ...loan, isPaid: true };
+        if (updatedLoan.synced && window.electronAPI?.updateLoanInMongo) {
+          window.electronAPI.updateLoanInMongo(updatedLoan);
+        }
+        return updatedLoan;
       }
       return loan;
     }));
   };
 
   const handlePauseLoan = (loanId: string, cycles: number) => {
-    setLoans(prev =>
-      prev.map(loan =>
-        loan.id === loanId ? { ...loan, pausedCycles: loan.pausedCycles + cycles } : loan
-      )
-    );
+    setLoans(prev => prev.map(loan => {
+      if (loan.id === loanId) {
+        const updatedLoan = { ...loan, pausedCycles: loan.pausedCycles + cycles };
+        if (updatedLoan.synced && window.electronAPI?.updateLoanInMongo) {
+          window.electronAPI.updateLoanInMongo(updatedLoan);
+        }
+        return updatedLoan;
+      }
+      return loan;
+    }));
   };
 
   const handleResumeLoan = (loanId: string) => {
-    setLoans(prev =>
-      prev.map(loan =>
-        loan.id === loanId && loan.pausedCycles > 0
-          ? { ...loan, pausedCycles: loan.pausedCycles - 1 }
-          : loan
-      )
-    );
+    setLoans(prev => prev.map(loan => {
+      if (loan.id === loanId && loan.pausedCycles > 0) {
+        const updatedLoan = { ...loan, pausedCycles: loan.pausedCycles - 1 };
+        if (updatedLoan.synced && window.electronAPI?.updateLoanInMongo) {
+          window.electronAPI.updateLoanInMongo(updatedLoan);
+        }
+        return updatedLoan;
+      }
+      return loan;
+    }));
   };
 
   const handleSyncLoan = (loanId: string) => {
@@ -119,6 +140,13 @@ function App() {
         loan.id === loanId ? { ...loan, synced: true } : loan
       )
     );
+  };
+
+  const handleRefreshLoans = async () => {
+    if (window.electronAPI?.refreshLoans) {
+      const dbLoans = await window.electronAPI.refreshLoans();
+      setLoans(dbLoans);
+    }
   };
 
   const filteredLoans = loans.filter(loan => {
@@ -138,16 +166,32 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-900 text-white p-8">
-      <div className="max-w-4xl mx-auto">
-        <div className="flex items-center justify-center mb-8">
-          <Coins className="w-8 h-8 text-green-400 mr-3" />
-          <h1 className="text-3xl font-bold text-green-400">Loan Manager</h1>
+      <header className="flex justify-between items-center max-w-4xl mx-auto mb-8">
+        <h1 className="text-3xl font-bold text-green-400 flex items-center gap-3">
+          <Coins className="w-8 h-8 text-green-400" />
+          Loan Manager
+        </h1>
+        <div className="flex gap-2">
+          <button
+            className="bg-blue-700 text-white px-3 py-1 rounded hover:bg-blue-800"
+            onClick={() => setShowSettings(true)}
+          >
+            Settings
+          </button>
+          <button
+            className="bg-green-700 text-white px-3 py-1 rounded hover:bg-green-800"
+            onClick={handleRefreshLoans}
+          >
+            Refresh
+          </button>
         </div>
+      </header>
 
+      <div className="max-w-4xl mx-auto">
         <div className="mb-8">
           {showLoanForm ? (
-            <LoanForm 
-              onSubmit={handleCreateLoan} 
+            <LoanForm
+              onSubmit={handleCreateLoan}
               onCancel={() => setShowLoanForm(false)}
             />
           ) : (
@@ -180,6 +224,12 @@ function App() {
           ))}
         </div>
       </div>
+      {showSettings && (
+        <SettingsPage
+          onClose={() => setShowSettings(false)}
+          onRefresh={handleRefreshLoans}
+        />
+      )}
     </div>
   );
 }
