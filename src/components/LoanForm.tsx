@@ -15,7 +15,8 @@ export function LoanForm({ onSubmit, onCancel }: LoanFormProps) {
     interestRate: '',
     startDate: new Date().toISOString().split('T')[0],
     interestType: 'weekly',
-    description: ''
+    description: '',
+    syncWithDb: false, // Add this
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -30,6 +31,8 @@ export function LoanForm({ onSubmit, onCancel }: LoanFormProps) {
       interestType: formData.interestType as 'daily' | 'weekly',
       description: formData.description.trim() || '', // Ensure description is always included
       additions: [], // Provide a default empty array for additions
+      pausedCycles: 0, // Provide a default value for pausedCycles
+      synced: formData.syncWithDb,
     };
 
     onSubmit(loanData);
@@ -41,7 +44,8 @@ export function LoanForm({ onSubmit, onCancel }: LoanFormProps) {
       interestRate: '',
       startDate: new Date().toISOString().split('T')[0],
       interestType: 'weekly',
-      description: ''
+      description: '',
+      syncWithDb: false, // Reset syncWithDb
     });
   };
 
@@ -130,6 +134,15 @@ export function LoanForm({ onSubmit, onCancel }: LoanFormProps) {
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             className="mt-1 block w-full rounded-md bg-gray-700 border-gray-600 text-white"
           />
+        </div>
+        <div className="flex items-center">
+          <input
+            type="checkbox"
+            checked={formData.syncWithDb}
+            onChange={e => setFormData({ ...formData, syncWithDb: e.target.checked })}
+            className="mr-2"
+          />
+          <label className="text-sm font-medium text-gray-300">Sync with database</label>
         </div>
         <div className="flex gap-4 mt-6">
           <button

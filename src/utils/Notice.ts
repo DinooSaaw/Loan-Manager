@@ -68,7 +68,7 @@ drawText('Loan Summary', 50, y); y -= 20;
 drawText(`Original Loan Amount: $${originalAmount}`, 60, y); y -= 20;
 drawText(`Current Balance: $${previousBalance}`, 60, y); y -= 20;
 drawText(`Interest Rate: ${interestRate}% per week`, 60, y); y -= 20;
-drawText(`Updated Balance Due: $${newBalance}`, 60, y); y -= 40;
+drawText(`Next Balance Due: $${newBalance}`, 60, y); y -= 40;
 
 drawText('We kindly remind you to review the terms of your loan agreement and ensure timely payments.', 50, y); y -= 20;
 drawText('This agreement is legally binding and enforceable under applicable law.', 50, y); y -= 20;
@@ -193,6 +193,143 @@ export async function generateLoanNotice({
   const pdfBytes = await pdfDoc.save();
 
   // Trigger download in the browser
+  const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+  const url = URL.createObjectURL(blob);
+
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+export async function generatePauseNotice({
+  recipientName,
+  lenderName,
+  date,
+  cyclesPaused,
+  interestType,
+  fileName = 'Loan_Pause_Notice.pdf',
+}: {
+  recipientName: string;
+  lenderName: string;
+  date: string;
+  cyclesPaused: number;
+  interestType: 'daily' | 'weekly';
+  fileName?: string;
+}): Promise<void> {
+  const pdfDoc = await PDFDocument.create();
+  const page = pdfDoc.addPage([595, 842]);
+
+  const timesRomanFont = await pdfDoc.embedFont(StandardFonts.TimesRoman);
+  const fontSize = 12;
+  const titleSize = 20;
+  const black = rgb(0, 0, 0);
+
+  const drawText = (text: string, x: number, y: number, size = fontSize) => {
+    page.drawText(text, { x, y, size, font: timesRomanFont, color: black });
+  };
+
+  let y = 800;
+
+  // Convert interestType to singular form for better readability
+  const cycleType = interestType === 'daily' ? 'day' : 'week';
+
+  drawText('Loan Pause Notice', 200, y, titleSize); y -= 40;
+  drawText(`Date: ${date}`, 50, y); y -= 30;
+  drawText(`To: ${recipientName}`, 50, y); y -= 30;
+  drawText(`From: ${lenderName}`, 50, y); y -= 40;
+
+  drawText(
+    `This notice is to inform you that your loan has been paused for ${cyclesPaused} ${cycleType}${cyclesPaused > 1 ? 's' : ''}.`,
+    50,
+    y
+  );
+  y -= 30;
+
+  drawText(
+    'During this period, no interest will be applied to your loan balance.',
+    50,
+    y
+  );
+  y -= 30;
+
+  drawText('Thank you for your cooperation.', 50, y);
+
+  const pdfBytes = await pdfDoc.save();
+  const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+  const url = URL.createObjectURL(blob);
+
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+export async function generateResumeNotice({
+  recipientName,
+  lenderName,
+  date,
+  originalAmount,
+  interestRate,
+  startDate,
+  fileName = 'Loan_Resume_Notice.pdf',
+}: {
+  recipientName: string;
+  lenderName: string;
+  date: string;
+  originalAmount: number;
+  interestRate: string;
+  startDate: string;
+  fileName?: string;
+}): Promise<void> {
+  const pdfDoc = await PDFDocument.create();
+  const page = pdfDoc.addPage([595, 842]);
+
+  const timesRomanFont = await pdfDoc.embedFont(StandardFonts.TimesRoman);
+  const fontSize = 12;
+  const titleSize = 20;
+  const black = rgb(0, 0, 0);
+
+  const drawText = (text: string, x: number, y: number, size = fontSize) => {
+    page.drawText(text, { x, y, size, font: timesRomanFont, color: black });
+  };
+
+  let y = 800;
+
+  drawText('Loan Resume Notice', 200, y, titleSize); y -= 40;
+  drawText(`Date: ${date}`, 50, y); y -= 30;
+  drawText(`To: ${recipientName}`, 50, y); y -= 30;
+  drawText(`From: ${lenderName}`, 50, y); y -= 40;
+
+  drawText(
+    'This notice is to inform you that your loan has been resumed.',
+    50,
+    y
+  ); 
+  y -= 20;
+  drawText(
+    'Interest will now be applied as per the original terms.',
+    50,
+    y
+  );
+  y -= 30;
+
+  drawText('Original Loan Terms:', 50, y); y -= 40;
+
+  // Display original loan details
+  drawText(`Original Loan Amount: $${originalAmount.toFixed(2)}`, 60, y); y -= 20;
+  drawText(`Interest Rate: ${interestRate}%`, 60, y); y -= 20;
+  drawText(`Start Date: ${new Date(startDate).toLocaleDateString()}`, 60, y); y -= 30;
+
+  drawText('Thank you for your cooperation.', 50, y);
+
+  const pdfBytes = await pdfDoc.save();
   const blob = new Blob([pdfBytes], { type: 'application/pdf' });
   const url = URL.createObjectURL(blob);
 
