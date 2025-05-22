@@ -68,7 +68,7 @@ drawText('Loan Summary', 50, y); y -= 20;
 drawText(`Original Loan Amount: $${originalAmount}`, 60, y); y -= 20;
 drawText(`Current Balance: $${previousBalance}`, 60, y); y -= 20;
 drawText(`Interest Rate: ${interestRate}% per week`, 60, y); y -= 20;
-drawText(`Updated Balance Due: $${newBalance}`, 60, y); y -= 40;
+drawText(`Next Balance Due: $${newBalance}`, 60, y); y -= 40;
 
 drawText('We kindly remind you to review the terms of your loan agreement and ensure timely payments.', 50, y); y -= 20;
 drawText('This agreement is legally binding and enforceable under applicable law.', 50, y); y -= 20;

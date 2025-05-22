@@ -1,7 +1,9 @@
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, ipcMain } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import pkg from 'electron-updater';
+import { MongoClient } from 'mongodb';
+
 const { autoUpdater } = pkg;
 
 const __filename = fileURLToPath(import.meta.url);
@@ -9,24 +11,78 @@ const __dirname = path.dirname(__filename);
 
 const isDev = process.env.NODE_ENV === 'development';
 
+let mongoUri = '';
+let dbName = '';
+let collectionName = '';
+
+let db, collection;
+
+async function connectMongo() {
+  if (!db & mongoUri != "") {
+    const client = new MongoClient(mongoUri);
+    await client.connect();
+    db = client.db(dbName);
+    collection = db.collection(collectionName);
+  }
+}
+
+ipcMain.handle('mongo-add-loan', async (event, loan) => {
+  if (!mongoUri || !dbName || !collectionName) return null;
+  await connectMongo();
+  const result = await collection.insertOne(loan);
+  return result.insertedId;
+});
+
+ipcMain.handle('mongo-update-loan', async (event, loan) => {
+  if (!mongoUri || !dbName || !collectionName) return false;
+  await connectMongo();
+  // Remove _id if present
+  const { _id, ...loanWithoutId } = loan;
+  await collection.updateOne({ id: loan.id }, { $set: loanWithoutId }, { upsert: true });
+  return true;
+});
+
+ipcMain.handle('mongo-get-loans', async () => {
+  if (!mongoUri || !dbName || !collectionName) return [];
+  await connectMongo();
+  const loans = await collection.find({}).toArray();
+  return loans;
+});
+
+ipcMain.handle('get-mongo-settings', () => {
+  return { mongoUri, dbName, collectionName };
+});
+
+ipcMain.handle('set-mongo-settings', async (event, settings) => {
+  mongoUri = settings.mongoUri;
+  dbName = settings.dbName;
+  collectionName = settings.collectionName;
+  db = undefined; // Force reconnect with new settings
+  return true;
+});
+
 function createWindow() {
   const mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
     icon: path.join(__dirname, 'assets', process.platform === 'darwin' ? 'icon.icns' : 'icon.ico'),
     webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false,
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
     },
   });
 
   // Load the local development server or the built files
+  let title = "Loan Manager"
   if (isDev) {
     mainWindow.loadURL('http://localhost:5173');
+    mainWindow.title = `${title} -Dev`;
     mainWindow.webContents.openDevTools();
   } else {
     mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
   }
+
 
   // Listen for update events
   autoUpdater.on('update-available', () => {
@@ -43,6 +99,7 @@ app.whenReady().then(() => {
 
   // Check for updates
   if (!isDev) {
+    console.log("Checking for updates")
     autoUpdater.checkForUpdatesAndNotify();
   }
 
